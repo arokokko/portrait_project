@@ -1,5 +1,8 @@
 const modals = () => {
-    function bindModal(triggerSelector, modalSelector, closeSelector, closeClickOverlay = true) {
+
+    let btnPressed = false;
+
+    function bindModal(triggerSelector, modalSelector, closeSelector, destroy = false) {
         const trigger = document.querySelectorAll(triggerSelector),
             modal = document.querySelector(modalSelector),
 			close = document.querySelector(closeSelector),
@@ -10,34 +13,20 @@ const modals = () => {
                 if (e.target) {
                     e.preventDefault();
 				}
-                
-                // let warning = document.createElement('div');
-                // warning.classList.add('status1');
-                // let warning1 = document.createElement('div');
-                // warning1.classList.add('status2');
 
 				const hideAndShow = () => {
                     windows.forEach(item => {
 					    item.style.display = 'none';
-				    });
+                    });
+                    
+                    if(destroy) {
+                        item.remove();
+                    }
+                    btnPressed = true;
                     modal.style.display = 'block';
                     document.body.style.overflow = 'hidden';
                 };
 
-                // проверка на заполненность полей ввода
-                // проверка через наличие или отсутствие соответствующих свойств у объекта modalState
-                // if (modalSelector == '.popup_calc_profile' && ( !state.width || !state.height)) {
-                // если поля поля ширины и высоты в первом модальном незаполнены, то добавляется warning с требованием 
-                //     item.parentNode.appendChild(warning);
-                //     document.querySelector('.status1').textContent = 'Укажите форму и размеры окна';
-                // } else if (modalSelector == '.popup_calc_end' && (!state.type || !state.profile)) {
-                // если не выбран тип и профиль, то добавляется warning1   
-                //     item.parentNode.appendChild(warning1);
-                //     document.querySelector('.status2').textContent = 'Укажите тип и профиль остекления';
-                // } else {
-                    
-                //     hideAndShow();
-                // }
                 hideAndShow();
             });
         });
@@ -52,7 +41,7 @@ const modals = () => {
         });
 
         modal.addEventListener('click', (e) => {
-            if (e.target === modal && closeClickOverlay) {
+            if (e.target === modal) {
 
 				windows.forEach(item => {
 					item.style.display = 'none';
@@ -65,11 +54,9 @@ const modals = () => {
     }
 
     function callModalByTime(selector, time) {
-
         setTimeout(() => {
 
             let display;
-
             document.querySelectorAll('[data-modal]').forEach(item => {
                 if (getComputedStyle(item).display !== 'none') {
                     display = 'block';
@@ -84,8 +71,22 @@ const modals = () => {
         }, time);
     }
 
+    function openByScroll(selector) {
+        window.addEventListener('scroll', () => {
+            let scrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+
+            if ( !btnPressed && (Math.ceil(window.pageYOffset) + document.documentElement.clientHeight) >= scrollHeight) {
+                
+                document.querySelector(selector).click();
+            }
+            
+        });
+    }
+
     bindModal('.button-design', '.popup-design', '.popup-design .popup-close');
     bindModal('.button-consultation', '.popup-consultation', '.popup-consultation .popup-close');
+    bindModal('.fixed-gift', '.popup-gift', '.popup-gift .popup-close', true);
+    openByScroll('.fixed-gift');
     callModalByTime('.popup-consultation', 60000);
 
 };
